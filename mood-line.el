@@ -160,37 +160,10 @@
                         'display `((space :align-to (- right ,reserve))))
             right)))
 
+
 ;;
 ;; Update functions
 ;;
-
-(defvar-local mood-line--vc-text nil)
-(defun mood-line--update-vc-segment (&rest _)
-  "Update `mood-line--vc-text' against the current VCS state."
-  (setq mood-line--vc-text
-        (when (and vc-mode buffer-file-name)
-          (let ((backend (vc-backend buffer-file-name))
-                (state (vc-state buffer-file-name (vc-backend buffer-file-name))))
-            (let ((face 'mode-line-neutral))
-              (concat (cond ((memq state '(edited added))
-                             (setq face 'mood-line-status-info)
-                             (propertize "+ " 'face face))
-                            ((eq state 'needs-merge)
-                             (setq face 'mood-line-status-warning)
-                             (propertize "⟷ " 'face face))
-                            ((eq state 'needs-update)
-                             (setq face 'mood-line-status-warning)
-                             (propertize "↑ " 'face face))
-                            ((memq state '(removed conflict unregistered))
-                             (setq face 'mood-line-status-error)
-                             (propertize "✖ " 'face face))
-                            (t
-                             (setq face 'mood-line-status-neutral)
-                             (propertize "✔ " 'face face)))
-                      (propertize (substring vc-mode (+ (if (eq backend 'Hg) 2 3) 2))
-                                  'face face
-                                  'mouse-face face)
-                      "  "))))))
 
 (defvar-local mood-line--flycheck-text nil)
 (defun mood-line--update-flycheck-segment (&optional status)
@@ -266,12 +239,8 @@
     (concat (let ((sys (coding-system-plist buffer-file-coding-system)))
               (cond ((memq (plist-get sys :category) '(coding-category-undecided coding-category-utf-8))
                      "UTF-8")
-                    (t (upcase (symbol-name (plist-get sys :name))))))
+                    (t (upcase (symbol-name (plist-get :name sys))))))
             "  ")))
-
-(defun mood-line-segment-vc ()
-  "Displays color-coded version control information in the mode-line."
-  mood-line--vc-text)
 
 (defun mood-line-segment-major-mode ()
   "Displays the current major mode in the mode-line."
@@ -318,11 +287,6 @@
         (add-hook 'flycheck-status-changed-functions #'mood-line--update-flycheck-segment)
         (add-hook 'flycheck-mode-hook #'mood-line--update-flycheck-segment)
 
-        ;; Setup VC hooks
-        (add-hook 'find-file-hook #'mood-line--update-vc-segment)
-        (add-hook 'after-save-hook #'mood-line--update-vc-segment)
-        (advice-add #'vc-refresh-state :after #'mood-line--update-vc-segment)
-
         ;; Set the new mode-line-format
         (setq-default mode-line-format
                       '((:eval
@@ -340,7 +304,6 @@
                           (format-mode-line
                            '((:eval (mood-line-segment-eol))
                              (:eval (mood-line-segment-encoding))
-                             (:eval (mood-line-segment-vc))
                              (:eval (mood-line-segment-major-mode))
                              (:eval (mood-line-segment-misc-info))
                              (:eval (mood-line-segment-flycheck))
@@ -352,11 +315,6 @@
       ;; Remove flycheck hooks
       (remove-hook 'flycheck-status-changed-functions #'mood-line--update-flycheck-segment)
       (remove-hook 'flycheck-mode-hook #'mood-line--update-flycheck-segment)
-
-      ;; Remove VC hooks
-      (remove-hook 'file-find-hook #'mood-line--update-vc-segment)
-      (remove-hook 'after-save-hook #'mood-line--update-vc-segment)
-      (advice-remove #'vc-refresh-state #'mood-line--update-vc-segment)
 
       ;; Restore the original mode-line format
       (setq-default mode-line-format mood-line--default-mode-line))))
