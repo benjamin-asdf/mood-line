@@ -192,7 +192,9 @@
 (defun mood-line-segment-modified ()
   "Displays a color-coded buffer modification/read-only indicator in the mode-line."
   (if (not (string-match-p "\\*.*\\*" (buffer-name)))
-      (if (buffer-modified-p)
+      (if (and
+	   (not (eq major-mode 'dired-mode))
+	   (buffer-modified-p))
           (propertize "● " 'face 'mood-line-modified)
         (if (and buffer-read-only (buffer-file-name))
             (propertize "■ " 'face 'mood-line-unimportant)
