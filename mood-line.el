@@ -215,11 +215,17 @@
           (t
            (format #("%d/%d  " 0 5 (face mood-line-status-info)) anzu--current-position anzu--total-matched)))))
 
-(defun mood-line-segment-multiple-cursors ()
-  "Displays the number of active multiple-cursors in the mode-line (if available)."
-  (when (and (boundp 'multiple-cursors-mode) multiple-cursors-mode)
-    (concat "MC"
-            (format #("×%d  " 0 3 (face mood-line-status-warning)) (mc/num-cursors)))))
+(defun mood-line-segment-meow-state ()
+  (when
+      (bound-and-true-p meow-mode)
+    (concat "["
+            (pcase meow--current-state
+              ('insert "I")
+              ('normal "N")
+              ('motion "M")
+              ('keypad "K")
+              ('beacon "B"))
+            "]")))
 
 (defun mood-line-segment-position ()
   "Displays the current cursor position in the mode-line."
@@ -297,9 +303,9 @@
                           (format-mode-line
                            '(" "
                              (:eval (mood-line-segment-modified))
+                             (:eval (mood-line-segment-meow-state))
                              (:eval (mood-line-segment-buffer-name))
                              (:eval (mood-line-segment-anzu))
-                             (:eval (mood-line-segment-multiple-cursors))
                              (:eval (mood-line-segment-position))))
 
                           ;; Right
