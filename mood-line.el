@@ -205,16 +205,6 @@
   "Displays the name of the current buffer in the mode-line."
   (propertize "%b  " 'face 'mood-line-buffer-name))
 
-(defun mood-line-segment-anzu ()
-  "Displays color-coded anzu status information in the mode-line (if available)."
-  (when (and (boundp 'anzu--state) anzu--state)
-    (cond ((eq anzu--state 'replace-query)
-           (format #("Replace: %d  " 0 11 (face mood-line-status-warning)) anzu--cached-count))
-          (anzu--overflow-p
-           (format #("%d/%d+  " 0 3 (face mood-line-status-info) 3 6 (face mood-line-status-error)) anzu--current-position anzu--total-matched))
-          (t
-           (format #("%d/%d  " 0 5 (face mood-line-status-info)) anzu--current-position anzu--total-matched)))))
-
 (defun mood-line-segment-meow-state ()
   (when
       (bound-and-true-p meow-mode)
@@ -303,10 +293,9 @@
                           (format-mode-line
                            '(" "
                              (:eval (mood-line-segment-modified))
-                             (:eval (mood-line-segment-meow-state))
                              (:eval (mood-line-segment-buffer-name))
-                             (:eval (mood-line-segment-anzu))
-                             (:eval (mood-line-segment-position))))
+                             (:eval (mood-line-segment-position))
+                             (:eval (mood-line-segment-meow-state))))
 
                           ;; Right
                           (format-mode-line
