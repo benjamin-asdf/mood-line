@@ -231,7 +231,7 @@
                   (region-end)
                   (region-beginning))))
            'face 'mood-line-unimportant)
-          (propertize " %p%%" 'face 'mood-line-unimportant)))
+          (propertize " %p%%  " 'face 'mood-line-unimportant)))
 
 (defun mood-line-segment-eol ()
   "Displays the EOL style of the current buffer in the mode-line."
